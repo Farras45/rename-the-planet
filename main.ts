@@ -14,6 +14,11 @@ const BEATS = [
 ];
 
 function buildLine(): string {
+  for (const [index, beat] of BEATS.entries()) {
+    if (beat.trim().length === 0) {
+      throw new Error(`beat ${index + 1} must not be empty`);
+    }
+  }
   const line = BEATS.join(" ");
   if (line.length < 1 || line.length > 200) {
     throw new Error(`entry must be 1-200 characters, got ${line.length}`);
@@ -21,10 +26,19 @@ function buildLine(): string {
   return line;
 }
 
-function writeEntry(): void {
-  const outDir = process.env.MAKEFUN_OUTPUT_DIR || "/output";
+function writeEntry(outDir: string, line: string): void {
+  if (line.length === 0) {
+    throw new Error("entry must not be empty");
+  }
+  if (line.includes("\n")) {
+    throw new Error("entry must be a single line");
+  }
+  if (line.length > 200) {
+    throw new Error(`entry must be at most 200 characters, got ${line.length}`);
+  }
   mkdirSync(outDir, { recursive: true });
-  writeFileSync(join(outDir, "entry.txt"), buildLine(), "utf8");
+  writeFileSync(join(outDir, "entry.txt"), line, "utf8");
 }
 
-writeEntry();
+const outDir = process.env.MAKEFUN_OUTPUT_DIR || "/output";
+writeEntry(outDir, buildLine());
